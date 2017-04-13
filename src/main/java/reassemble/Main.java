@@ -13,7 +13,7 @@ public class Main {
 		String file = resourcesFolder + args[0];
 		try (BufferedReader in = new BufferedReader(new FileReader(file))) {
 			 List<String> entries = in.lines().collect(Collectors.toList());
-			 assert(entries.size(), 2)
+			 //assert(entries.size(), 2)
 		}
 		
 	}
