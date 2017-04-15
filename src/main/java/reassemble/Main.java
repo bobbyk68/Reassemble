@@ -11,10 +11,13 @@ public class Main {
 	public static void main(String[] args) throws IOException {
 		String resourcesFolder = "src/test/resources/" ;
 		String file = resourcesFolder + args[0];
+		List<String> entries = null;
 		try (BufferedReader in = new BufferedReader(new FileReader(file))) {
-			 List<String> entries = in.lines().collect(Collectors.toList());
+			 entries = in.lines().collect(Collectors.toList());
 			 System.out.println(entries.size() );
 		}
+		
+		assert(entries.size() > 2);
 		
 	}
 
