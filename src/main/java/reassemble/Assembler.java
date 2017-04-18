@@ -10,43 +10,33 @@ import java.util.StringTokenizer;
 public class Assembler {
 
 	public static void main(String[] args) throws IOException {
-		NestedClass nc = new Assembler().new NestedClass();
-		
-		String resourcesFolder = "src/test/resources/" ;
-//		if ( args.length > 0) {
-//			String file = resourcesFolder + args[0];
-//			try (BufferedReader in = new BufferedReader(new FileReader(file))) {
-//				in.lines()
-//					.map(NestedClass::nc.reassemble)
-//					.forEach(System.out::println);
-//			}
-//			return;
-//		}
-		
+		Defrag defrag = new Assembler().new Defrag();
 
-		assert (nc.reassemble("ABCDEF;DEFG").equals("ABCDEFG"));
-		assert (nc.reassemble("XYAB;PXY").equals("PXYAB"));
-		assert (nc.reassemble("XAB;ABC").equals("XABC"));
-		assert (nc.reassemble("ABCDEF;XYZABC").equals("XYZABCDEF"));
-		assert(nc.reassemble("ABCDEF;XCDEZ").equals("ABCDEF"));
-		assert(nc.reassemble("ABCDEF;BCDE").equals("ABCDEF"));
-		assert (nc.reassemble("O draconia;conian devil! Oh la;h lame sa;saint!")
-				.equals("O draconian devil! Oh lame saint!"));
-		
-	}
-	
-	class NestedClass {
-		
-		private   List<String> getFragments(String line){
-			StringTokenizer st = new StringTokenizer(line, ";");
-			List<String> fragments = new ArrayList<>();
-			while (st.hasMoreTokens()) {
-				fragments.add( st.nextToken() );
+		String resourcesFolder = "src/test/resources/";
+		if (args.length > 0) {
+			String file = resourcesFolder + args[0];
+			try (BufferedReader in = new BufferedReader(new FileReader(file))) {
+				in.lines().map(defrag::reassemble).forEach(System.out::println);
 			}
-			return fragments;
+			return;
 		}
-		
-		private  String reassemble(String line) {
+
+		// assert from language, replace with junit
+		assert (defrag.reassemble("ABCDEF;DEFG").equals("ABCDEFG"));
+		assert (defrag.reassemble("XYAB;PXY").equals("PXYAB"));
+		assert (defrag.reassemble("XAB;ABC").equals("XABC"));
+		assert (defrag.reassemble("ABCDEF;XYZABC").equals("XYZABCDEF"));
+		assert (defrag.reassemble("ABCDEF;XCDEZ").equals("ABCDEF"));
+		assert (defrag.reassemble("ABCDEF;BCDE").equals("ABCDEF"));
+		assert (defrag
+				.reassemble("O draconia;conian devil! Oh la;h lame sa;saint!")
+				.equals("O draconian devil! Oh lame saint!"));
+
+	}
+
+	class Defrag {
+
+		public String reassemble(String line) {
 
 			List<String> list = getFragments(line);
 			String text = list.get(0);
@@ -57,13 +47,15 @@ public class Assembler {
 				int matchedFrag = 0;
 				int textLength = 0, findMeLength = 0;
 				boolean prefix = false;
-				//lets go through each fragment
+				// lets go through each fragment
 				for (int entryIndex = list.size() - 1; entryIndex >= 0; entryIndex--) {
-					
+
 					String findMe = list.get(entryIndex);
 					textLength = text.length();
 					findMeLength = findMe.length();
-					for (int k =  findMe.length() - 1; k > 0; k--) {
+					
+					// at the front
+					for (int k = findMe.length() - 1; k > 0; k--) {
 						int region = findMeLength - k;
 						if (text.regionMatches(0, findMe, k, region)) {
 							if (region > max) {
@@ -75,8 +67,10 @@ public class Assembler {
 						}
 					}
 
+					// at the back
 					for (int k = 0; k < text.length(); k++) {
-						int region = (k + findMeLength <= textLength) ? findMeLength : textLength - k;
+						int region = (k + findMeLength <= textLength) ? findMeLength
+								: textLength - k;
 						if (text.regionMatches(k, findMe, 0, region)) {
 							if (region > max) {
 								index = k;
@@ -89,18 +83,28 @@ public class Assembler {
 				}
 
 				// stitch text together
-				if (prefix) { 
+				if (prefix) {
 					text = list.get(matchedFrag).substring(0, index) + text;
 				} else if (index > textLength - list.get(matchedFrag).length()) { // Suffix
-					text = text + list.get(matchedFrag).substring(textLength - index);
+					text = text
+							+ list.get(matchedFrag).substring(
+									textLength - index);
 				}
 				list.remove(matchedFrag);
 			}
 			return text;
 		}
 
-		
 	}
 
-	
+	// turn fragments into a list
+	private List<String> getFragments(String line) {
+		StringTokenizer st = new StringTokenizer(line, ";");
+		List<String> fragments = new ArrayList<>();
+		while (st.hasMoreTokens()) {
+			fragments.add(st.nextToken());
+		}
+		return fragments;
+	}
+
 }
